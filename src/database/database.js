@@ -1,6 +1,6 @@
 import pg from 'pg';
 
-const {Pool} = pg;
+const { Pool } = pg;
 
 const connectionDB = new Pool({
     host: 'localhost',
