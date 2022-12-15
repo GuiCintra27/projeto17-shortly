@@ -11,7 +11,7 @@ export async function createShortenUrlValidation(req, res, next) {
     }
 
     try {
-        const sessionExists = await connectionDB.query(`
+        const session = await connectionDB.query(`
         SELECT "userId"
         FROM sessions
         WHERE token = $1
@@ -19,7 +19,7 @@ export async function createShortenUrlValidation(req, res, next) {
             [token]
         );
 
-        if (sessionExists.rows.length === 0) {
+        if (session.rows.length === 0) {
             return res.sendStatus(401);
         }
 
@@ -29,7 +29,7 @@ export async function createShortenUrlValidation(req, res, next) {
 
         const shortenedUrl = nanoid(14);
 
-        req.userId = sessionExists.rows[0].userId;
+        req.userId = session.rows[0].userId;
         req.shortenedUrl = shortenedUrl;
 
         next();
@@ -39,19 +39,19 @@ export async function createShortenUrlValidation(req, res, next) {
     }
 }
 
-export async function getUrlValidation(req, res, next){
+export async function getUrlValidation(req, res, next) {
     const { id } = req.params;
-    console.log(id);
+
     try {
         const url = await connectionDB.query(`
         SELECT id, "shortUrl", url
         FROM urls
         WHERE id = $1
         `,
-        [id]        
+            [id]
         );
 
-        if (url.rows.length === 0){
+        if (url.rows.length === 0) {
             return res.sendStatus(404);
         }
 
@@ -64,26 +64,80 @@ export async function getUrlValidation(req, res, next){
     }
 }
 
-export async function openUrlValidation(req, res, next){
-    const {shortUrl} = req.params;
+export async function openUrlValidation(req, res, next) {
+    const { shortUrl } = req.params;
 
-    try {      
+    try {
         const update = await connectionDB.query(`
         UPDATE urls
         SET "visitCount" = "visitCount" + 1
         WHERE "shortUrl" = $1
         `,
-        [shortUrl]
+            [shortUrl]
         );
-        
-        if(update.rowCount === 0){
+
+        if (update.rowCount === 0) {
             return res.sendStatus(404);
         }
-    
+
         next();
     } catch (err) {
         console.log(err);
         return res.sendStatus(500);
     }
 
+}
+
+export async function deleteUrlValidation(req, res, next) {
+    const {id} = req.params;
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+
+    if (!token) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        const session = await connectionDB.query(`
+        SELECT "userId"
+        FROM sessions
+        WHERE token = $1
+        `,
+            [token]
+        );
+
+        if (session.rows.length === 0) {
+            return res.sendStatus(401);
+        }
+
+        const url = await connectionDB.query(`
+        SELECT *
+        FROM urls
+        WHERE id = $1
+        `,
+            [id]
+        );
+
+        if (url.rows.length === 0) {
+            return res.sendStatus(404);
+        }
+
+        const deleteUrl = await connectionDB.query(`
+        DELETE 
+        FROM urls
+        WHERE id = $1
+        AND "userOwner" = $2
+        `,
+            [id, session.rows[0].userId]
+        );
+
+        if(deleteUrl.rowCount === 0){
+            return res.sendStatus(401);
+        }
+
+        next();
+    } catch (err) {
+        console.log(err);
+        return res.sendStatus(500);
+    }
 }

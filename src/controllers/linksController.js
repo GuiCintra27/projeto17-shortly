@@ -45,3 +45,7 @@ export async function openUrl(req, res) {
         return res.sendStatus(500);
     }
 }
+
+export async function deleteUrl(req, res) {
+    return res.sendStatus(204);
+}
