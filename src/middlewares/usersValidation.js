@@ -147,13 +147,22 @@ export async function getRankingValidation(req, res, next) {
     try {
         const ranking = await connectionDB.query(`
         SELECT us.id, us.name, 
-        COUNT(ur.*) AS "linksCount", sum(ur."visitCount") AS "visitCount" 
+        CASE WHEN COUNT(ur.*) = 0 THEN 
+            0
+        ELSE 
+            COUNT(ur.*) 
+        END AS "linksCount", 
+        CASE WHEN COUNT(ur.*) = 0 THEN 
+            0 
+        ELSE 
+            SUM(ur."visitCount") 
+        END AS "visitCount" 
         FROM users AS us 
-            JOIN urls AS ur 
-                ON ur."userOwner" = us.id 
-        GROUP BY us.id 
-            ORDER BY "visitCount" DESC
-                LIMIT 10
+        LEFT JOION urls AS ur 
+            ON ur."userOwner" = us.id 
+                GROUP BY us.id 
+                    ORDER BY "visitCount" DESC, "linksCount" DESC
+                        LIMIT 10
         `);
 
         if (ranking.rows.length === 0) {
