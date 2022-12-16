@@ -100,7 +100,7 @@ export async function getUserValidation(req, res, next) {
         if (userUrls.rows.length === 0) {
             const userData = await connectionDB.query(`
                 SELECT users.id, users.name, 
-                0 as "visitCount", array[]::text[] as "shortenedUrls"
+                0 AS "visitCount", ARRAY[]::TEXT[] as "shortenedUrls"
                 FROM users
                 WHERE users.id = $1
                 `,
@@ -110,7 +110,7 @@ export async function getUserValidation(req, res, next) {
             if (userData.rows.length === 0) {
                 return res.sendStatus(404);
             }
-            
+
             req.userData = userData.rows[0];
         } else {
             const userData = await connectionDB.query(`
@@ -132,11 +132,35 @@ export async function getUserValidation(req, res, next) {
             if (userData.rows.length === 0) {
                 return res.sendStatus(404);
             }
-            
+
             req.userData = userData.rows[0];
         }
 
+        next();
+    } catch (err) {
+        console.log(err);
+        return res.sendStatus(500);
+    }
+}
 
+export async function getRankingValidation(req, res, next) {
+    try {
+        const ranking = await connectionDB.query(`
+        SELECT us.id, us.name, 
+        COUNT(ur.*) AS "linksCount", sum(ur."visitCount") AS "visitCount" 
+        FROM users AS us 
+            JOIN urls AS ur 
+                ON ur."userOwner" = us.id 
+        GROUP BY us.id 
+            ORDER BY "visitCount" DESC
+                LIMIT 10
+        `);
+
+        if (ranking.rows.length === 0) {
+            return res.status(200).send([]);
+        }
+
+        req.ranking = ranking.rows;
 
         next();
     } catch (err) {

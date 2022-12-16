@@ -43,3 +43,9 @@ export async function getUser(req, res) {
 
     return res.status(200).send(userData);
 }
+
+export async function getRanking(req, res) {
+    const ranking = req.ranking;
+
+    return res.status(200).send(ranking);
+}
