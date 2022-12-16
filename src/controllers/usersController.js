@@ -37,3 +37,9 @@ export async function signIn(req, res) {
         return res.sendStatus(500);
     }
 }
+
+export async function getUser(req, res) {
+    const userData = req.userData;
+
+    return res.status(200).send(userData);
+}

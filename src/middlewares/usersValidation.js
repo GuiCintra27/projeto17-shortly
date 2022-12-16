@@ -67,3 +67,80 @@ export async function signInValidation(req, res, next) {
         return res.sendStatus(500);
     }
 }
+
+export async function getUserValidation(req, res, next) {
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+
+    if (!token) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        const session = await connectionDB.query(`
+        SELECT "userId"
+        FROM sessions
+        WHERE token = $1
+        `,
+            [token]
+        );
+
+        if (session.rows.length === 0) {
+            return res.sendStatus(401);
+        }
+
+        const userUrls = await connectionDB.query(`
+        SELECT *
+        FROM urls
+        WHERE "userOwner" = $1
+        `,
+            [session.rows[0].userId]
+        );
+
+        if (userUrls.rows.length === 0) {
+            const userData = await connectionDB.query(`
+                SELECT users.id, users.name, 
+                0 as "visitCount", array[]::text[] as "shortenedUrls"
+                FROM users
+                WHERE users.id = $1
+                `,
+                [session.rows[0].userId]
+            );
+
+            if (userData.rows.length === 0) {
+                return res.sendStatus(404);
+            }
+            
+            req.userData = userData.rows[0];
+        } else {
+            const userData = await connectionDB.query(`
+                SELECT users.id, users.name, 
+                    SUM(urls."visitCount") AS "visitCount", json_agg(
+                        json_build_object(
+                            'id', urls.id, 'shortUrl', urls."shortUrl", 'url', urls.url, 'visitCount', urls."visitCount"
+                        )
+                    ) AS "shortenedUrls"
+                FROM users
+                    JOIN urls 
+                        ON users.id = urls."userOwner"
+                WHERE users.id = $1
+                GROUP BY users.id
+                `,
+                [session.rows[0].userId]
+            );
+
+            if (userData.rows.length === 0) {
+                return res.sendStatus(404);
+            }
+            
+            req.userData = userData.rows[0];
+        }
+
+
+
+        next();
+    } catch (err) {
+        console.log(err);
+        return res.sendStatus(500);
+    }
+}
