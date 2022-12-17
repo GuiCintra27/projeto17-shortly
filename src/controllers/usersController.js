@@ -1,5 +1,4 @@
 import connectionDB from "../database/database.js";
-const date = new Date();
 
 export async function signUp(req, res) {
     const { name, email } = req.body;
@@ -7,10 +6,10 @@ export async function signUp(req, res) {
 
     try {
         await connectionDB.query(`
-        INSERT INTO users (name, email, password, "createdAt")
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO users (name, email, password)
+        VALUES ($1, $2, $3)
         `,
-            [name, email, password, date]
+            [name, email, password]
         );
 
         return res.sendStatus(201);
@@ -26,10 +25,10 @@ export async function signIn(req, res) {
 
     try {
         await connectionDB.query(`
-        INSERT INTO sessions (token, "userId", "createdAt")
-        VALUES ($1, $2, $3)
+        INSERT INTO sessions (token, "userId")
+        VALUES ($1, $2)
         `,
-            [token, userId, date]
+            [token, userId]
         );
         return res.send({ token }).status(200);
     } catch (err) {

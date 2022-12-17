@@ -1,5 +1,4 @@
 import connectionDB from "../database/database.js";
-const date = new Date();
 
 export async function createShortenUrl(req, res) {
     const { url } = req.body;
@@ -8,10 +7,10 @@ export async function createShortenUrl(req, res) {
 
     try {
         await connectionDB.query(`
-        INSERT INTO urls ("userOwner", url, "shortUrl", "visitCount", "createdAt")
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO urls ("userOwner", url, "shortUrl", "visitCount")
+        VALUES ($1, $2, $3, $4)
         `,
-            [user, url, shortUrl, 0, date]
+            [user, url, shortUrl, 0]
         );
 
         return res.send(shortUrl).status(201);
