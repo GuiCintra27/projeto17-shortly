@@ -8,8 +8,7 @@ const connectionDB = new Pool({
     port: 5432,
     user: 'guicintra',
     password: 'BNwjJTspbQy1I5hFBZV10FLRX7ITTeHu',
-    database: 'shortly_cjt7',
-    ssl: true
+    database: 'shortly_cjt7'
 })
 
 export default connectionDB;
