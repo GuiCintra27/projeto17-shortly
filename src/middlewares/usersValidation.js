@@ -158,7 +158,7 @@ export async function getRankingValidation(req, res, next) {
             SUM(ur."visitCount") 
         END AS "visitCount" 
         FROM users AS us 
-        LEFT JOION urls AS ur 
+        LEFT JOIN urls AS ur 
             ON ur."userOwner" = us.id 
                 GROUP BY us.id 
                     ORDER BY "visitCount" DESC, "linksCount" DESC
