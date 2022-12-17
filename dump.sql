@@ -3,7 +3,7 @@ CREATE TABLE users(
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
-    "createdAt" TIMESTAMP NOT NULL
+    "createdAt" TIMESTAMP WITHOUT TIMEZONE NOT NULL
 );
 
 CREATE TABLE urls(
@@ -12,12 +12,12 @@ CREATE TABLE urls(
     url TEXT NOT NULL,
     "shortUrl" TEXT NOT NULL,
     "visitCount" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP NOT NULL
+    "createdAt" TIMESTAMP WITHOUT TIMEZONE NOT NULL
 );
 
 CREATE TABLE sessions(
     id SERIAL PRIMARY KEY, 
     token TEXT NOT NULL UNIQUE, 
     "userId" INTEGER NOT NULL REFERENCES "users"("id"),
-    "createdAt" TIMESTAMP NOT NULL
+    "createdAt" TIMESTAMP WITHOUT TIMEZONE NOT NULL
 );
