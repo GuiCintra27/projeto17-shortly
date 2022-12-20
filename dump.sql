@@ -8,7 +8,7 @@ CREATE TABLE users(
 
 CREATE TABLE urls(
     id SERIAL PRIMARY KEY, 
-    "userOwner" INTEGER NOT NULL REFERENCES "users"("id"),
+    "userOwner" INTEGER NOT NULL,
     url TEXT NOT NULL,
     "shortUrl" TEXT NOT NULL,
     "visitCount" INTEGER NOT NULL,
@@ -18,6 +18,10 @@ CREATE TABLE urls(
 CREATE TABLE sessions(
     id SERIAL PRIMARY KEY, 
     token TEXT NOT NULL UNIQUE, 
-    "userId" INTEGER NOT NULL REFERENCES "users"("id"),
+    "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE "urls" ADD CONSTRAINT "urls_fk0" FOREIGN KEY ("userOwner") REFERENCES "users"("id");
+
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_fk0" FOREIGN KEY ("userId") REFERENCES "users"("id");
