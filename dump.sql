@@ -10,7 +10,7 @@ CREATE TABLE urls(
     id SERIAL PRIMARY KEY, 
     "userOwner" INTEGER NOT NULL,
     url TEXT NOT NULL,
-    "shortUrl" TEXT NOT NULL,
+    "shortUrl" TEXT UNIQUE NOT NULL,
     "visitCount" INTEGER NOT NULL,
     "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
 );
