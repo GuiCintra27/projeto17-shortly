@@ -1,16 +1,11 @@
-import connectionDB from "../database/database.js";
+import { createSession, insertUser } from "../repositories/usersRepository.js";
 
 export async function signUp(req, res) {
     const { name, email } = req.body;
     const password = req.password;
 
     try {
-        await connectionDB.query(`
-        INSERT INTO users (name, email, password)
-        VALUES ($1, $2, $3)
-        `,
-            [name, email, password]
-        );
+        await insertUser(name, email, password);
 
         return res.sendStatus(201);
     } catch (err) {
@@ -24,12 +19,8 @@ export async function signIn(req, res) {
     const userId = req.userId;
 
     try {
-        await connectionDB.query(`
-        INSERT INTO sessions (token, "userId")
-        VALUES ($1, $2)
-        `,
-            [token, userId]
-        );
+        await createSession(token, userId);
+        
         return res.send({ token }).status(200);
     } catch (err) {
         console.log(err);
